@@ -45,6 +45,8 @@ values else there can be problems while running the application.
 
 ### Step 3
 Build the images and start the services:
+
+P.S If you have not added your user to docker user group then please use **sudo docker-compose xxx** while running all docker commands. 
 ```
 docker-compose build
 docker-compose up -d
@@ -57,14 +59,13 @@ After the build is created and docker has boot up our containers we are ready to
 ```
 docker ps
 ```
-![](https://i.ibb.co/X3j291Y/demo.gif)
 ### Step 5
 Before we move ahead we have to run few lasts commands to make run our laravel migration which will create table in mysql and also our seeders which will fill data in the tables for us.
 
 Run these commands:
 ```
 docker exec -it AUTOCOMPLETE_APP_BACKEND bash -c "cd backend/ && composer install"
-docker exec -it AUTOCOMPLETE_APP_BACKEND php artisan key:generate --ansi
+docker exec -it AUTOCOMPLETE_APP_BACKEND php backend/artisan key:generate --ansi
 docker exec -it AUTOCOMPLETE_APP_BACKEND php backend/artisan migrate
 docker exec -it AUTOCOMPLETE_APP_BACKEND php backend/artisan db:seed
 ```
@@ -72,6 +73,7 @@ Here `AUTOCOMPLETE_APP_BACKEND` is name of the container which has php and larav
 
 ### Step 6
 If everything works as expected, you will be able to access the app by opening the following url in your browser:  [http://localhost:3000](http://localhost:3000). Here you'll get to see the home page where we have our search bar in the header. API calls will be made to fetch the result against entered search query. The fetched data is saved using Reducer so that on next same query search data can be served from reducer store rather than making a new API call again. Debouncing is also used to limit the number of API calls on each key press.
+![](https://i.ibb.co/X3j291Y/demo.gif)
 
 ## API methods
 There is only one endpoint exposed and the endpoint follow a URL pattern like this: `/api/v1/` + `controller`. `v1` is added to give versioning to the api.
