@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        uid: ${UID}
+    container_name: ${APP_NAME}_BACKEND
+    ports:
+      - ${BACKEND_PORT}:80
+    depends_on:
+      - db
+    environment:
+      - APACHE_RUN_USER=#1000
+      - APACHE_RUN_GROUP=#1000
+    volumes:
+      - ./backend:/var/www/html/backend
+    networks:
+      - schoology
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    tty: true
+    stdin_open: true
+    container_name: ${APP_NAME}_FRONTEND
+    ports:
+      - ${FRONTEND_PORT}:3000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/var/www/html/frontend
+      - '/var/www/html/frontend/node_modules'
+    networks:
+    - schoology
+
+  db:
+    image: mysql:5.7
+    container_name: ${APP_NAME}_DB
+    restart: on-failure
+    tty: true
+    ports: 
+      - "4306:3306"
+    environment:
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ./backend/db:/var/lib/mysql
+    networks:
+      - schoology
+
+networks:
+  schoology:
+    driver: bridge
