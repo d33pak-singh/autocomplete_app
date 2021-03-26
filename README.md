@@ -1,11 +1,11 @@
 # Schoology Take Home Assignment
 
 ## Prerequisites
-You will need the following tools: `docker` and `docker-compose` to get this app running properly. Also please make sure you have `npm` installed in your environment.
+You will need the following tools: `docker` and `docker-compose` to get this app running properly.
 
 ### Preparing the files
 
-I'll start with 3 images 
+We are going to use 3 images
 
 - PHP: contains php-fpm, php-cli, composer and dependencies for running laravel
 - Node: contains npm used to run react app
@@ -23,30 +23,31 @@ I'll start with 3 images
     2 directories, 3 files
 ```
 
-We have **docker-compose.yml** and Dockerfile in each directory that has the configuration files for our custom image for backend and frontend.
+We have **docker-compose.yml** and Dockerfile in each frontend and backend directory that has the configuration files for our custom image.
+
 ## Steps to get the App running
 ### Step 1
 Download the source code by running the `git` clone command:
 ```
 git clone https://github.com/d33pak-singh/autocomplete_app.git
 ```
-You'll have the source code in a directory name `autocomplete_app`
+You'll have the source code in the directory named `autocomplete_app`
 ### Step 2
 
-Please make sure that the listed ports are avaibale as we are going to use those ports to run different services.
+Please make sure that the listed ports are available as we are going to use those ports to run different services.
 - Laravel backend (8080)
 - React frontend (3000)
 - Mysql (4306)
 
-Move to the root of `autocomplete_app` and then start then let's begin the build process
-- Copy `.env.example` to `.env` and add values for all DB_DATABASE, DB_USERNAME, DB_PASSWORD, UID and BACKEND_PORT. Please make sure to update these
-values else there can be problems while running the application.
+Move to the root of `autocomplete_app` and let's begin the build process
+- Copy `.env.example` to `.env` and add values for all DB_DATABASE, DB_USERNAME, DB_PASSWORD, UID and BACKEND_PORT. I've added default values
+for these and app will work even with those values as well, but in case you want you can change them from here.
 - Move to `autocomplete_app/backend` and follow the same steps by changing the `.env.example` to `.env`. Please keep in mind that this time you are configuring env variables for your laravel app while previously you did the same for docker.
 
 ### Step 3
 Build the images and start the services:
 
-P.S If you have not added your user to docker user group then please use **sudo docker-compose xxx** while running all docker commands. 
+P.S If you have not added your current user to docker user group then please use **sudo docker-compose xxx** while running all docker commands. 
 ```
 docker-compose build
 docker-compose up -d
@@ -60,7 +61,8 @@ After the build is created and docker has boot up our containers we are ready to
 docker ps
 ```
 ### Step 5
-Before we move ahead we have to run few lasts commands to make run our laravel migration which will create table in mysql and also our seeders which will fill data in the tables for us.
+Before we move ahead we have to run few last commands for running migrations and seeders in laravel which will create table in mysql and will also
+insert some random data in the tables for us which we'll be fetching via the api.
 
 Run these commands:
 ```
@@ -72,19 +74,24 @@ docker exec -it AUTOCOMPLETE_APP_BACKEND php backend/artisan db:seed
 Here `AUTOCOMPLETE_APP_BACKEND` is name of the container which has php and laravel running on it. You can also crosscheck this with `docker ps` command.
 
 ### Step 6
-If everything works as expected, you will be able to access the app by opening the following url in your browser:  [http://localhost:3000](http://localhost:3000). Here you'll get to see the home page where we have our search bar in the header. API calls will be made to fetch the result against entered search query. The fetched data is saved using Reducer so that on next same query search data can be served from reducer store rather than making a new API call again. Debouncing is also used to limit the number of API calls on each key press.
+If everything works as expected, you will be able to access the app by opening the following url in your browser:  [http://localhost:3000]
+(http://localhost:3000). Here you'll get to see the home page where we have our search bar in the header. You can start typing in this search bar
+and API calls will be made to fetch the result against entered search query. The fetched data is saved using Reducer to ensure that if user make a
+similar search we can show result from our cached data. This will reduce the overhead of api calls in case of similar search query. Debouncing is also
+used to limit the number of API calls on each key press and api will be called after 500ms once user stopped typing.
+
 ![](https://i.ibb.co/X3j291Y/demo.gif)
 
 ## API methods
 There is only one endpoint exposed and the endpoint follow a URL pattern like this: `/api/v1/` + `controller`. `v1` is added to give versioning to the api.
 
-For this assignment, I have create one controller called `people` and one method using can be accessed by the endpoint `/api/v1/people`.
+For this assignment, I have created one controller called `people` and one method using can be accessed by the endpoint `/api/v1/people`.
 
 URL | Query | Method | Description | 
 --- | --- | --- | ---
 api/v1/people | query=xxxx  | GET | Returns list of all people with matching name  |                     
 
-Also as per the asked requirement here is a example CURL command using which one can run to fetch data:
+Also as asked in the assignment here is a example CURL command using which one can run to fetch data:
 ```
   curl -X GET \
     http://127.0.0.1:8080/api/v1/people?query=Deepak \
@@ -130,13 +137,13 @@ Application is structured in the following way:
 I have also written unit test cases for our endpoint.
 To run the `API` tests, navigate to the root folder and run the following command:
 ```
-docker exec -it AUTOCOMPLETE_APP_WEB vendor/bin/phpunit
+docker exec -it AUTOCOMPLETE_APP_WEB backend/vendor/bin/phpunit
 ```
 ![](https://i.ibb.co/p31cgqz/unit-tes.png)
 
 
 ## Todo's
-- All the commands that user has to run manually can also be automated using docker
+- All the commands that user has to run manually one time after containers are up can also be automated using docker.
 - Setup Redis on back-end and cache result from db for more fast results.
 
 # Thank you for the time
